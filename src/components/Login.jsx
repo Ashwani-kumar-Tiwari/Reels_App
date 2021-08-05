@@ -18,8 +18,7 @@ function Login(props) {
             height: "100vh",
             display: "flex",
             justifyContent: "center",
-            width: "100vw"
-            ,
+            width: "100vw",
             alignItems: "center",
             // paddingLeft: "10vw",
             // paddingRight: "10vw",
@@ -82,10 +81,10 @@ function Login(props) {
                                 className={classes.image}
                             />
                             <CardContent className={classes.centerElements}>
-                                <TextField id="outlined-basic" label="email" type="email" variant="outlined" value={email} size="small" display="block"
+                                <TextField id="outlined-basic" label="Enter Email" type="email" variant="outlined" value={email} size="small" display="block"
                                     className={classes.mb}
                                     onChange={(e) => { setEmail(e.target.value) }} />
-                                <TextField id="outlined-basic" label="password" type="password" variant="outlined" value={password}
+                                <TextField id="outlined-basic" label="Password" type="password" variant="outlined" value={password}
                                     size="small"
                                     className={classes.mb}
                                     onChange={(e) => { setPassword(e.target.value) }}

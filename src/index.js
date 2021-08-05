@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import ContextParent from "./ContextParent";
+import IntersectionDemo from './intersectionobserver/intersectionDemo';
 //import Test from "./TestCOmponent/Test"
 //import UseEffect from "./TestCOmponent/UseEffect";
 //import MyComponent, { MyContext } from "./TestCOmponent/q5";
@@ -15,6 +16,7 @@ ReactDOM.render(
     {/* <UseEffect></UseEffect> */}
     {/* <ContextParent></ContextParent> */}
     {/* <Material></Material> */}
+    {/* <IntersectionDemo></IntersectionDemo> */}
   </React.StrictMode>,
   document.getElementById('root')
 );
