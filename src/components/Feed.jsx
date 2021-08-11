@@ -5,8 +5,10 @@ import Button from "@material-ui/core/Button";
 //import IconButton from '@material-ui//IconButton';
 import Avatar from '@material-ui/core/Avatar';
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
+import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
 import uuid from 'react-uuid'
 import {database, storage} from '../firebase';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 
 function Feed() {
     const useStyles = makeStyles((theme) => ({
@@ -18,6 +20,25 @@ function Feed() {
         input: {
             display: 'none',
         },
+        icon: {
+            color: "red",
+            position: "absolute",
+            // left: "38rem",
+            bottom: "1vh",
+            fontSize: "2rem"
+        },
+        heart: {
+            left:"37rem"
+        },
+        chat: {
+            left:"40rem"
+        },
+        notSelected: {
+            color : "lightgray"
+        },
+        selected: {
+            color: "red"
+        }
     }));
 
     const classes = useStyles();
@@ -26,6 +47,7 @@ function Feed() {
     const [pageLoading, setPageLoading] = useState(true);
     const { signout, currentUser } = useContext(AuthContext)
     const [videos, setVideos] = useState([]);
+    const [isLiked, setLiked] = useState(false);
     // const [reel, setReel] =useState();
     const handleLogout = async () => {
         try {
@@ -89,6 +111,25 @@ function Feed() {
         uploadTask.on('state_changed', f1, f2, f3);
     }
 
+    const handleLiked = async (puid) => {
+        let postRef = await database.posts.doc(puid).get();
+        let post = postRef.data();
+        let likes = post.likes;
+        if(isLiked == false) {
+            database.posts.doc(puid).update ({
+                "likes" : [...likes, currentUser.uid]
+            })
+        } else {
+            let likes = post.likes.filter(lkuid  => {
+                return lkuid != currentUser.uid;
+            })
+            database.posts.doc(puid).update ({
+                "likes" : likes
+            })
+        }
+        setLiked(!isLiked)
+    }
+
     //component did mount
     //user data get
     useEffect(async() => {
@@ -101,12 +142,12 @@ function Feed() {
     },[]);
 
     //get post video
-    useEffect(async () => {
-        let unsub = await database.posts.orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    useEffect(async() => {
+        let unsub = await database.posts.orderBy("createdAt", "desc").onSnapshot(async snapshot => {
             //console.log(snapshot.docs[0].data());
             //console.log(snapshot.docs.map(doc => doc.data().url));
 
-            //let videos = snapshot.docs.map(doc => doc.data());
+            let videos = snapshot.docs.map(doc => doc.data());
             // let videosUrls = videos.map(video => video.url);
             // let auidArr = videos.map(video => video.auid);
             // let userArr = [];
@@ -120,16 +161,17 @@ function Feed() {
             for(let i = 0; i < videos.length; i++){
                 let videoUrl = videos[i].url;
                 let auid = videos[i].auid;
-                let userObject = database.users.doc(auid).get();
+                let id = snapshot.docs[i].id;
+                let userObject = await database.users.doc(auid).get();
                 let userProfileUrl = userObject.profileUrl;
                 let userName = userObject.userName;
-                videosArr.push({videoUrl, userProfileUrl, userName});
+                videosArr.push({videoUrl, userProfileUrl, userName, puid:id});
             }
             setVideos(videosArr);
         })
 
         return unsub;
-    }, [])
+    }, []);
 
     return (
         pageLoading == true ? <div>Loading.....</div> : <div>
@@ -151,8 +193,17 @@ function Feed() {
                    return <div className="video-container">
                         <Video
                             src = {videoObj.videoUrl}
-                            id = {idx}
+                            id = {videoObj.puid}
+                            userName={videoObj.userName}
                         ></Video>
+                        <FavoriteIcon className = {[classes.icon, classes.heart, isLiked == false ? classes.notSelected : classes.selected]}
+                        onClick = {() => {handleLiked(videoObj.puid)}}></FavoriteIcon>
+                        <ChatBubbleIcon className = {[classes.icon, classes.chat, classes.notSelected]} onClick ={() => {
+                            alert("open popup")
+                        }}>
+
+                        </ChatBubbleIcon>
+                        {/* hidden -> overlay - comments view */}
                     </div>
                 })}
             </div>
@@ -161,20 +212,24 @@ function Feed() {
 }
 
 function Video(props) {
-
+    //console.log(props.userName);
     return (
-        <video style ={{
+        <>
+            <video style ={{
             height: "86vh",
             marginBottom: "5rem",
             marginTop: "2rem",
             border: '1px solid red'
-        }} controls muted = {true} id = {props.id}>
-            <source src = {
-                props.src
-            } type = "video/mp4"            
-            >
-            </source>
-        </video>
+        }} autoPlay muted="true" id={props.id} >
+                <source src={
+                    props.src
+                } type="video/mp4"
+
+                >
+                </source>
+            </video >
+            {props.userName}
+        </>
     )
 }
 
